@@ -4,52 +4,57 @@ namespace SolrTest\Controller\Admin;
 
 use SolrTest\Controller\SolrControllerTestCase;
 
-class ProfileRuleControllerTest extends SolrControllerTestCase
+class MappingControllerTest extends SolrControllerTestCase
 {
     public function testBrowseAction()
     {
-        $this->dispatch($this->solrProfile->ruleUrl('browse'));
+        $this->dispatch($this->solrNode->mappingUrl('browse'));
+        $this->assertResponseStatusCode(200);
+    }
+
+    public function testResourceBrowseAction()
+    {
+        $this->dispatch($this->solrNode->resourceMappingUrl('items', 'browse'));
         $this->assertResponseStatusCode(200);
     }
 
     public function testAddAction()
     {
-        $this->dispatch($this->solrProfile->ruleUrl('add'));
+        $this->dispatch($this->solrNode->resourceMappingUrl('items', 'add'));
         $this->assertResponseStatusCode(200);
     }
 
     public function testEditAction()
     {
-        $this->dispatch($this->solrProfileRule->adminUrl('edit'));
+        $this->dispatch($this->solrMapping->adminUrl('edit'));
         $this->assertResponseStatusCode(200);
     }
 
     public function testDeleteConfirmAction()
     {
-        $this->dispatch($this->solrProfileRule->adminUrl('delete-confirm'));
+        $this->dispatch($this->solrMapping->adminUrl('delete-confirm'));
         $this->assertResponseStatusCode(200);
     }
 
     public function testDeleteAction()
     {
-        $solrProfileRule2 = $this->api()->create('solr_profile_rules', [
-            'o:solr_field' => [
-                'o:id' => $this->solrField->id(),
+        $solrMapping = $this->api()->create('solr_mappings', [
+            'o:solr_node' => [
+                'o:id' => $this->solrNode->id(),
             ],
+            'o:resource_name' => 'items',
+            'o:field_name' => 'dcterms_description_t',
             'o:source' => 'dcterms:description',
             'o:settings' => [
                 'formatter' => '',
-            ],
-            'o:solr_profile' => [
-                'o:id' => $this->solrProfile->id(),
             ],
         ])->getContent();
 
         $forms = $this->getServiceLocator()->get('FormElementManager');
         $form = $forms->get(\Omeka\Form\ConfirmForm::class);
-        $this->dispatch($solrProfileRule2->adminUrl('delete'), 'POST', [
+        $this->dispatch($solrMapping->adminUrl('delete'), 'POST', [
             'confirmform_csrf' => $form->get('confirmform_csrf')->getValue(),
         ]);
-        $this->assertRedirectTo($this->solrProfile->ruleUrl('browse'));
+        $this->assertRedirectTo($this->solrNode->resourceMappingUrl('items', 'browse'));
     }
 }

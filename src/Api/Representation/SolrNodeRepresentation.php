@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright BibLibre, 2016
+ * Copyright BibLibre, 2016-2017
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -32,9 +32,12 @@ namespace Solr\Api\Representation;
 use SolrClient;
 use SolrClientException;
 use Omeka\Api\Representation\AbstractEntityRepresentation;
+use Solr\Schema;
 
 class SolrNodeRepresentation extends AbstractEntityRepresentation
 {
+    protected $schema;
+
     /**
      * {@inheritDoc}
      */
@@ -105,31 +108,46 @@ class SolrNodeRepresentation extends AbstractEntityRepresentation
         return 'OK';
     }
 
-    public function fieldUrl($action = null, $canonical = false)
+    public function mappingUrl($action = null, $canonical = false)
     {
         $url = $this->getViewHelper('Url');
         $params = [
             'action' => $action,
-            'id' => $this->id(),
+            'nodeId' => $this->id(),
         ];
         $options = [
             'force_canonical' => $canonical,
         ];
 
-        return $url('admin/solr/node-id-field', $params, $options);
+        return $url('admin/solr/node-id-mapping', $params, $options);
     }
 
-    public function profileUrl($action = null, $canonical = false)
+    public function resourceMappingUrl($resourceName, $action = null, $canonical = false)
     {
         $url = $this->getViewHelper('Url');
         $params = [
             'action' => $action,
-            'id' => $this->id(),
+            'nodeId' => $this->id(),
+            'resourceName' => $resourceName,
         ];
         $options = [
             'force_canonical' => $canonical,
         ];
 
-        return $url('admin/solr/node-id-profile', $params, $options);
+        return $url('admin/solr/node-id-mapping-resource', $params, $options);
+    }
+
+    public function schema()
+    {
+        if (!isset($this->schema)) {
+            $clientSettings = $this->clientSettings();
+            $this->schema = new Schema(
+                $clientSettings['hostname'],
+                $clientSettings['port'],
+                $clientSettings['path']
+            );
+        }
+
+        return $this->schema;
     }
 }
