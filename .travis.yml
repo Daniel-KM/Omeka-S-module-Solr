@@ -14,9 +14,7 @@ before_install:
  - nvm use node
 
 install:
-  - sudo apt-get install -y php-pear php5-dev
-  - git clone https://github.com/crocos/pecl-build.git ~/.phpenv/plugins/pecl-build
-  - phpenv pecl solr
+  - pecl install solr
   - echo "extension=solr.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ../..
   - git clone --depth 1 https://github.com/omeka/omeka-s.git
