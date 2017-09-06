@@ -15,7 +15,8 @@ before_install:
 
 install:
   - sudo apt-get install -y --force-yes php-pear php5-dev
-  - yes '' | sudo pecl install solr
+  - git clone https://github.com/crocos/pecl-build.git ~/.phpenv/plugins/pecl-build
+  - yes '' | phpenv pecl solr
   - echo "extension=solr.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ../..
   - git clone --depth 1 https://github.com/omeka/omeka-s.git
