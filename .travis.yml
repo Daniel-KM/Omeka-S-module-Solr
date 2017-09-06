@@ -14,7 +14,7 @@ before_install:
  - nvm use node
 
 install:
-  - pecl install solr
+  - yes '' | pecl install solr
   - echo "extension=solr.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ../..
   - git clone --depth 1 https://github.com/omeka/omeka-s.git
