@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright BibLibre, 2016
+ * Copyright BibLibre, 2016-2020
  * Copyright Daniel Berthereau, 2017-2020
  *
  * This software is governed by the CeCILL license under French law and abiding
@@ -74,34 +74,12 @@ class SolrQuerier extends AbstractQuerier
         try {
             $solrQueryResponse = $this->solrClient->query($this->solrQuery);
         } catch (SolrServerException $e) {
-            // The query may be badly formatted, so try to escape all reserved
-            // characters instead of returning an exception.
-            // @link https://lucene.apache.org/core/7_2_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
-            // TODO Check before the query.
-            $reservedCharacters = [
-                // The character "\" must be escaped first.
-                '\\' => '\\\\',
-                '+' => '\+',
-                '-' => '\-' ,
-                '&&' => '\&\&',
-                '||' => '\|\|',
-                '!' => '\!',
-                '(' => '\(' ,
-                ')' => '\)',
-                '{' => '\{',
-                '}' => '\}',
-                '[' => '\[',
-                ']' => '\]',
-                '^' => '\^',
-                '"' => '\"',
-                '~' => '\~',
-                '*' => '\*',
-                '?' => '\?',
-                ':' => '\:',
-            ];
             // The solr query cannot be an empty string.
-            $q = $this->query->getQuery() ?: '*:*';
-            $escapedQ = str_replace(array_keys($reservedCharacters), array_values($reservedCharacters), $q);
+            $q = $this->query->getQuery();
+            if (!$q) {
+                throw new QuerierException($e->getMessage(), $e->getCode(), $e);
+            }
+            $escapedQ = $this->escapeSolrQuery($q);
             $this->solrQuery->setQuery($escapedQ);
             try {
                 $solrQueryResponse = $this->solrClient->query($this->solrQuery);
@@ -179,7 +157,7 @@ class SolrQuerier extends AbstractQuerier
 
         $isPublic = $this->query->getIsPublic();
         if ($isPublic) {
-            $this->solrQuery->addFilterQuery($isPublicField . ':' . 1);
+            $this->solrQuery->addFilterQuery("$isPublicField:1");
         }
 
         $this->solrQuery->setGroup(true);
@@ -192,21 +170,16 @@ class SolrQuerier extends AbstractQuerier
         if ($sitesField) {
             $siteId = $this->query->getSiteId();
             if (isset($siteId)) {
-                $fq = $sitesField . ':' . $siteId;
-                $this->solrQuery->addFilterQuery($fq);
+                $this->solrQuery->addFilterQuery("$sitesField:$siteId");
             }
         }
 
         $filters = $this->query->getFilters();
         foreach ($filters as $name => $values) {
             foreach ($values as $value) {
-                if (is_array($value)) {
-                    if (empty($value)) {
-                        continue;
-                    }
-                    $value = '(' . implode(' OR ', array_map([$this, 'enclose'], $value)) . ')';
-                } else {
-                    $value = $this->enclose($value);
+                $value = $this->encloseValue($value);
+                if (!strlen($value)) {
+                    continue;
                 }
                 $this->solrQuery->addFilterQuery("$name:$value");
             }
@@ -356,122 +329,107 @@ class SolrQuerier extends AbstractQuerier
 
     protected function addFilterQueries()
     {
-        // There are two way to add filter queries: multiple simple filters, or
-        // one complex filter query. A complex filter may be required when the
-        // joiners are mixed with "and" and "or".
-        // if ($multiple) {
-        //     $this->addMultipleFilterQueries();
-        //     return;
-        // }
-
         $filters = $this->query->getFilterQueries();
         if (!$filters) {
             return;
         }
 
+        // Filters are boolean: in or out. nevertheless, the check can be more
+        // complex than "equal": before or after a date, like a string, etc.
+
         $first = true;
-        $fq = '';
         foreach ($filters as $name => $values) {
+            $fq = '';
             foreach ($values as $value) {
                 // There is no default in Omeka.
                 // @see \Omeka\Api\Adapter\AbstractResourceEntityAdapter::buildPropertyQuery()
                 $type = $value['type'];
-                $value = $this->encloseValue($value, $type);
-                $joiner = @$value['joiner'] ?: 'and';
-                switch ($type) {
-                    case 'neq':
-                    case 'nin':
-                        if ($first) {
-                            $fq .= "-$name:$value";
-                            $first = false;
-                        } else {
-                            // FIXME "Or" + "not contains" ?
-                            $fq .= $joiner === 'and' ? " -$name:$value" : " $name:$value";
-                        }
-                        break;
-                    case 'eq':
-                    case 'in':
-                        if ($first) {
-                            $fq .= "+$name:$value";
-                            $first = false;
-                        } else {
-                            $fq .= $joiner === 'and' ? " +$name:$value" : " $name:$value";
-                        }
-                        break;
+                $val = isset($value['value']) ? trim($value['value']) : '';
+                if ($val === '' && !in_array($type, ['ex', 'nex'])) {
+                    continue;
                 }
-            }
-        }
-        $this->solrQuery->addFilterQuery($fq);
-    }
-
-    protected function addMultipleFilterQueries()
-    {
-        $filters = $this->query->getFilterQueries();
-        foreach ($filters as $name => $values) {
-            foreach ($values as $value) {
-                $type = $value['type'];
-                $value = $this->encloseValue($value['value'], $type);
-                // There is no default in Omeka.
-                // @see \Omeka\Api\Adapter\AbstractResourceEntityAdapter::buildPropertyQuery()
+                if ($first) {
+                    $joiner = '';
+                    $first = false;
+                } else {
+                    $joiner = isset($value['joiner']) && $value['joiner'] === 'or' ? 'OR' : 'AND';
+                }
+                // "AND/NOT" cannot be used as first.
+                if (substr($type, 0, 1) === 'n') {
+                    $bool = '(NOT ';
+                    $endBool = ')';
+                } else {
+                    $bool = '(';
+                    $endBool = ')';
+                }
                 switch ($type) {
+                    // Equal.
                     case 'neq':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'eq':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
+                        $val = $this->encloseValue($val);
+                        $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
+                    // Contains.
                     case 'nin':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'in':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
-                        break;
+                            $val = $this->regexValue($val);
+                            $fq .= " $joiner ($name:$bool$val$endBool)";
+                            break;
 
-                    // TODO Fixes theses Solr queries.
-                    case 'nlist':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
-                    case 'list':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
-                        break;
-
+                    // Starts with.
                     case 'nsw':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'sw':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
+                        $val = $this->regexValue($val, '^', '');
+                        $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
+                    // Ends with.
                     case 'new':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'ew':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
+                        $val = $this->regexValue($val, '', '$');
+                        $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
+                    // Matches.
                     case 'nma':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'ma':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
+                        // Matches is already an regular expression, so just set it.
+                        // TODO Add // or not?
+                        // TODO Escape regex for regexes…
+                        $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
+                    // In list.
+                    case 'nlist':
+                    case 'list':
+                        // TODO Manage api filter in list (not used in standard forms).
+                        break;
+
+                    // Resource with id.
                     case 'nres':
-                        $this->solrQuery->addFilterQuery("-$name:$value");
-                        break;
                     case 'res':
-                        $this->solrQuery->addFilterQuery("+$name:$value");
+                        // Like equal, but the field must be an integer.
+                        if (substr($name, -2) === '_i' || substr($name, -3) === '_is') {
+                            $val = (int) $val;
+                            $fq .= " $joiner ($name:$bool$val$endBool)";
+                        }
                         break;
 
+                    // Exists (has a value).
                     case 'nex':
-                        $this->solrQuery->addFilterQuery("-$name:[* TO *]");
-                        break;
                     case 'ex':
-                        $this->solrQuery->addFilterQuery("+$name:[* TO *]");
+                        // TODO Find the good way to manage "has a value" in a filter query of Solr.
                         break;
+
+                    default:
+                        throw new \Search\Querier\Exception\QuerierException(sprintf(
+                        'Search type "%s" is not managed.', // @translate
+                        $type
+                    ));
                 }
             }
+            $this->solrQuery->addFilterQuery($fq);
         }
     }
 
@@ -484,22 +442,14 @@ class SolrQuerier extends AbstractQuerier
         ], ['returnScalar' => 'fieldName'])->getContent();
     }
 
-    protected function encloseValue($value, $type = null)
+    /**
+     * Enclose a string to protect a query for Solr.
+     *
+     * @param array|string $string
+     * @return string
+     */
+    protected function encloseValue($value)
     {
-        if (in_array($type, ['in', 'nin'])) {
-            if (is_array($value)) {
-                if (empty($value)) {
-                    $value = '';
-                } else {
-                    $value = array_map(function ($v) {
-                        return '*' . $v . '*';
-                    }, $value);
-                }
-            } else {
-                $value = '*' . $value . '*';
-            }
-        }
-
         if (is_array($value)) {
             if (empty($value)) {
                 $value = '';
@@ -514,14 +464,94 @@ class SolrQuerier extends AbstractQuerier
     }
 
     /**
-     * Protect a string for Solr.
+     * Prepare a value for a regular expression.
      *
-     * @param string $value
+     * Adapted from module Solr of BibLibre.
+     *
+     * @param array|string $value
+     * @param string $append
+     * @param string $prepend
+     * @return string
+     */
+    protected function regexValue($value, $prepend = '', $append = '')
+    {
+        $regexVal = function($string) use ($prepend, $append) {
+            $parts = preg_split('/([*?])/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
+            return '/' . $prepend . implode('', array_map(function ($part) {
+                if ($part === '*') {
+                    return '.*';
+                }
+                if ($part === '?') {
+                    return '.';
+                }
+                return $this->escapeRegexp($part);
+            }, $parts)) . $append . '/';
+        };
+        $values = array_map($regexVal, is_array($value) ? $value : [$value]);
+        return implode(' OR ', $values);
+    }
+
+    /**
+     * Enclose a string to protect a query for Solr.
+     *
+     * @param string $string
      * @return string
      */
     protected function enclose($value)
     {
         return '"' . addcslashes($value, '"') . '"';
+    }
+
+    /**
+     * Enclose a string to protect a filter regex query for Solr.
+     *
+     * @param $string $string
+     * @return $string
+     */
+    protected function escapeRegexp($string)
+    {
+        return preg_quote($string, '/');
+    }
+
+    /**
+     * Enclose a string to protect a filter query for Solr.
+     *
+     * @param $string $string
+     * @return $string
+     */
+    protected function escape($string)
+    {
+        return preg_replace('/([+\-&|!(){}[\]\^"~*?:])/', '\\\\$1', $string);
+    }
+
+    protected function escapeSolrQuery($q)
+    {
+        $reservedCharacters = [
+            // The character "\" must be escaped first.
+            '\\' => '\\\\',
+            '+' => '\+',
+            '-' => '\-' ,
+            '&&' => '\&\&',
+            '||' => '\|\|',
+            '!' => '\!',
+            '(' => '\(' ,
+            ')' => '\)',
+            '{' => '\{',
+            '}' => '\}',
+            '[' => '\[',
+            ']' => '\]',
+            '^' => '\^',
+            '"' => '\"',
+            '~' => '\~',
+            '*' => '\*',
+            '?' => '\?',
+            ':' => '\:',
+        ];
+        return str_replace(
+            array_keys($reservedCharacters),
+            array_values($reservedCharacters),
+            $q
+        );
     }
 
     /**
