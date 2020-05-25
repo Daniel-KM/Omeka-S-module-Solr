@@ -160,20 +160,24 @@ class SolrQuerier extends AbstractQuerier
 
         $isPublic = $this->query->getIsPublic();
         if ($isPublic) {
-            $this->solrQuery->addFilterQuery("$isPublicField:1");
+            $this->solrQuery
+                ->addFilterQuery("$isPublicField:1");
         }
 
-        $this->solrQuery->setGroup(true);
-        $this->solrQuery->addGroupField($resourceNameField);
+        $this->solrQuery
+            ->setGroup(true)
+            ->addGroupField($resourceNameField);
 
         $resources = $this->query->getResources();
         $fq = $resourceNameField . ':(' . implode(' OR ', $resources) . ')';
-        $this->solrQuery->addFilterQuery($fq);
+        $this->solrQuery
+            ->addFilterQuery($fq);
 
         if ($sitesField) {
             $siteId = $this->query->getSiteId();
             if (isset($siteId)) {
-                $this->solrQuery->addFilterQuery("$sitesField:$siteId");
+                $this->solrQuery
+                    ->addFilterQuery("$sitesField:$siteId");
             }
         }
 
@@ -184,7 +188,8 @@ class SolrQuerier extends AbstractQuerier
                 if (!strlen($value)) {
                     continue;
                 }
-                $this->solrQuery->addFilterQuery("$name:$value");
+                $this->solrQuery
+                    ->addFilterQuery("$name:$value");
             }
         }
 
@@ -219,7 +224,8 @@ class SolrQuerier extends AbstractQuerier
                     $start = $filterValue['start'] ? $filterValue['start'] : '*';
                     $end = $filterValue['end'] ? $filterValue['end'] : '*';
                 }
-                $this->solrQuery->addFilterQuery("$name:[$start TO $end]");
+                $this->solrQuery
+                    ->addFilterQuery("$name:[$start TO $end]");
             }
         }
 
@@ -464,7 +470,8 @@ class SolrQuerier extends AbstractQuerier
                     ));
                 }
             }
-            $this->solrQuery->addFilterQuery(ltrim($fq));
+            $this->solrQuery
+                ->addFilterQuery(ltrim($fq));
         }
     }
 
@@ -595,9 +602,9 @@ class SolrQuerier extends AbstractQuerier
      * @param string $string
      * @return string
      */
-    protected function enclose($value)
+    protected function enclose($string)
     {
-        return '"' . addcslashes($value, '"') . '"';
+        return '"' . addcslashes($string, '"') . '"';
     }
 
     /**
