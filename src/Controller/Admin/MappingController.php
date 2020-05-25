@@ -91,6 +91,8 @@ class MappingController extends AbstractActionController
         $mappings = $this->api()->search('solr_mappings', [
             'solr_node_id' => $solrNode->id(),
             'resource_name' => $resourceName,
+            'sort_by' => 'source',
+            'sort_order' => 'asc',
         ])->getContent();
 
         $view = new ViewModel;
