@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright BibLibre, 2016-2020
+ * Copyright BibLibre, 2016
  * Copyright Daniel Berthereau, 2017-2020
  *
  * This software is governed by the CeCILL license under French law and abiding
@@ -34,6 +34,7 @@ use Search\Querier\AbstractQuerier;
 use Search\Querier\Exception\QuerierException;
 use Search\Response;
 use Solr\Api\Representation\SolrNodeRepresentation;
+use Solr\Feature\TransliteratorCharacterTrait;
 use SolrClient;
 use SolrClientException;
 use SolrDisMaxQuery;
@@ -42,6 +43,8 @@ use SolrServerException;
 
 class SolrQuerier extends AbstractQuerier
 {
+    use TransliteratorCharacterTrait;
+
     /**
      * @var Response
      */
@@ -337,9 +340,9 @@ class SolrQuerier extends AbstractQuerier
         // Filters are boolean: in or out. nevertheless, the check can be more
         // complex than "equal": before or after a date, like a string, etc.
 
-        $first = true;
         foreach ($filters as $name => $values) {
             $fq = '';
+            $first = true;
             foreach ($values as $value) {
                 // There is no default in Omeka.
                 // @see \Omeka\Api\Adapter\AbstractResourceEntityAdapter::buildPropertyQuery()
@@ -363,47 +366,68 @@ class SolrQuerier extends AbstractQuerier
                     $endBool = ')';
                 }
                 switch ($type) {
+                    // Regex requires string (_s), not text or anything else.
+                    // So if the field is not a string, use a simple "+", that
+                    // will be enough in most of the cases.
+                    // Furthermore, unlike sql, solr regex doesn't manage
+                    // insensitive search, neither flag "i".
+                    // The pattern is limited to 1000 characters by default.
+                    // TODO Check the size of the pattern.
+                    // @link https://lucene.apache.org/core/6_6_6/core/org/apache/lucene/util/automaton/RegExp.html
+
                     // Equal.
                     case 'neq':
                     case 'eq':
-                        $val = $this->encloseValue($val);
+                        if ($this->fieldIsString($name)) {
+                            $val = $this->regexDiacriticsValue($val, '', '');
+                        } else {
+                            $val = $this->encloseValue($val);
+                        }
                         $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
-
-                    // Regex requires string (_s, _ws, etc.), not text (_t).
-                    // So if the field is a text, use a simple "+", that will be
-                    // enough in most of the cases.
 
                     // Contains.
                     case 'nin':
                     case 'in':
-                            $val = $this->fieldIsText($name) ? $this->encloseValueAnd($val) : $this->regexValue($val);
-                            $fq .= " $joiner ($name:$bool$val$endBool)";
-                            break;
+                        if ($this->fieldIsString($name)) {
+                            $val = $this->regexDiacriticsValue($val, '.*', '.*');
+                        } else {
+                            $val = $this->encloseValueAnd($val);
+                        }
+                        $fq .= " $joiner ($name:$bool$val$endBool)";
+                        break;
 
                     // Starts with.
                     case 'nsw':
                     case 'sw':
-                        // This query is manageable only with a string field.
-                        $val = $this->fieldIsText($name) ? $this->encloseValue($val) : $this->regexValue($val, '^', '');
+                        if ($this->fieldIsString($name)) {
+                            $val = $this->regexDiacriticsValue($val, '', '.*');
+                        } else {
+                            $val = $this->encloseValueAnd($val);
+                        }
                         $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
                     // Ends with.
                     case 'new':
                     case 'ew':
-                        // This query is manageable only with a string field.
-                        $val = $this->fieldIsText($name) ? $this->encloseValue($val) : $this->regexValue($val, '', '$');
+                        if ($this->fieldIsString($name)) {
+                            $val = $this->regexDiacriticsValue($val, '.*', '');
+                        } else {
+                            $val = $this->encloseValueAnd($val);
+                        }
                         $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
                     // Matches.
                     case 'nma':
                     case 'ma':
-                        // Matches is already an regular expression, so just set it.
+                        // Matches is already an regular expression, so just set
+                        // it. Note that Solr can manage only a small part of
+                        // regex and anchors are added by default.
                         // TODO Add // or not?
                         // TODO Escape regex for regexes…
-                        $val = $this->fieldIsText($name) ? $this->encloseValue($val) : $val;
+                        $val = $this->fieldIsString($name) ? $val : $this->encloseValue($val);
                         $fq .= " $joiner ($name:$bool$val$endBool)";
                         break;
 
@@ -453,11 +477,25 @@ class SolrQuerier extends AbstractQuerier
         ], ['returnScalar' => 'fieldName'])->getContent();
     }
 
-    protected function fieldIsText($name)
+    protected function fieldIsTokenized($name)
     {
         return substr($name, -2) === '_t'
             || substr($name, -4) === '_txt'
+            || substr($name, -3) === '_ws'
             || (bool) strpos($name, '_txt_');
+    }
+
+    protected function fieldIsString($name)
+    {
+        return substr($name, -2) === '_s'
+            || substr($name, -3) === '_ss'
+            || substr($name, -8) === '_s_lower'
+            || substr($name, -9) === '_ss_lower';
+    }
+
+    protected function fieldIsLower($name)
+    {
+        return substr($name, -6) === '_lower';
     }
 
     /**
@@ -503,30 +541,51 @@ class SolrQuerier extends AbstractQuerier
     }
 
     /**
-     * Prepare a value for a regular expression.
-     *
-     * Adapted from module Solr of BibLibre.
+     * Prepare a value for a regular expression, managing diacritics and case.
      *
      * @param array|string $value
      * @param string $append
      * @param string $prepend
      * @return string
      */
-    protected function regexValue($value, $prepend = '', $append = '')
+    protected function regexDiacriticsValue($value, $prepend = '', $append = '')
     {
-        $regexVal = function($string) use ($prepend, $append) {
-            $parts = preg_split('/([*?])/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
-            return '/' . $prepend . implode('', array_map(function ($part) {
-                if ($part === '*') {
-                    return '.*';
-                }
-                if ($part === '?') {
-                    return '.';
-                }
-                return $this->escapeRegexp($part);
-            }, $parts)) . $append . '/';
+        static $basicDiacritics;
+        if (is_null($basicDiacritics)) {
+            $basicDiacritics = [
+                '\\' => '\\\\',
+                '.' => '\.',
+                '*' => '.*',
+                '?' => '.',
+                '+' => '\+',
+                '[' => '\[',
+                '^' => '\^',
+                ']' => '\]',
+                '$' => '\$',
+                '(' => '\(',
+                ')' => '\)',
+                '{' => '\{',
+                '}' => '\}',
+                '=' => '\=',
+                '!' => '\!',
+                '<' => '\<',
+                '>' => '\>',
+                '|' => '\|',
+                ':' => '\:',
+                '-' => '\-',
+                '/' => '\/',
+            ] + array_map(function($v) {
+                return substr($v, 0, 1);
+            }, $this->baseDiacritics);
+        }
+        $regexVal = function($string) use ($prepend, $append, $basicDiacritics) {
+            $latinized = str_replace(array_keys($basicDiacritics), array_values($basicDiacritics), mb_strtolower($string));
+            return '/' . $prepend
+                . str_replace(array_keys($this->regexDiacritics), array_values($this->regexDiacritics), $latinized)
+                . $append . '/';
         };
         $values = array_map($regexVal, is_array($value) ? $value : [$value]);
+
         return implode(' OR ', $values);
     }
 
@@ -539,17 +598,6 @@ class SolrQuerier extends AbstractQuerier
     protected function enclose($value)
     {
         return '"' . addcslashes($value, '"') . '"';
-    }
-
-    /**
-     * Enclose a string to protect a filter regex query for Solr.
-     *
-     * @param $string $string
-     * @return $string
-     */
-    protected function escapeRegexp($string)
-    {
-        return preg_quote($string, '/');
     }
 
     /**
