@@ -92,21 +92,27 @@ class Module extends AbstractModule
     {
         $this->setServiceLocator($serviceLocator);
         $connection = $serviceLocator->get('Omeka\Connection');
+        $translator = $serviceLocator->get('MvcTranslator');
+        $messenger = new Messenger;
+
+        $message = new Message(sprintf(
+            $translator->translate('This module is deprecated and will not receive new improvements any more. The module %1$sSearchSolr%2$s replaces it.'), // @translate
+            '<a href="https://github.com/Daniel-KM/Omeka-S-module-SearchSolr" target="_blank">', '</a>'
+        ));
+        $message->setEscapeHtml(false);
+        $messenger->addWarning($message);
 
         if (!extension_loaded('solr')) {
-            $translator = $serviceLocator->get('MvcTranslator');
             $message = $translator->translate('Solr module requires PHP Solr extension, which is not loaded.');
             throw new ModuleCannotInstallException($message);
         }
 
         if (!class_exists('SolrDisMaxQuery')) {
-            $translator = $serviceLocator->get('MvcTranslator');
             $solrVersion = class_exists('SolrUtils') ? \SolrUtils::getSolrVersion() : $translator->translate('[unknown]');
             $message = new Message(
                 $translator->translate('To use advanced query options (and/or, distance max, etc.), Solr module requires PHP Solr library 2.1.0 or above (lastest recommended, current %s).'),
                 $solrVersion
             );
-            $messenger = new Messenger();
             $messenger->addWarning($message);
         }
 
