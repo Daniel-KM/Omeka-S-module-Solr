@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016
@@ -142,7 +142,7 @@ class SolrQuerier extends AbstractQuerier
         $solrNodeSettings = $this->solrNode->settings();
         $isPublicField = $solrNodeSettings['is_public_field'];
         $resourceNameField = $solrNodeSettings['resource_name_field'];
-        $sitesField = isset($solrNodeSettings['sites_field']) ? $solrNodeSettings['sites_field'] : null;
+        $sitesField = $solrNodeSettings['sites_field'] ?? null;
 
         if (class_exists('SolrDisMaxQuery')) {
             $this->solrQuery = new SolrDisMaxQuery;
@@ -185,7 +185,9 @@ class SolrQuerier extends AbstractQuerier
         foreach ($filters as $name => $values) {
             if ($name === 'id') {
                 $value = [];
-                array_walk_recursive($values, function($v) use (&$value) { $value[] = $v; });
+                array_walk_recursive($values, function ($v) use (&$value): void {
+                    $value[] = $v;
+                });
                 $values = array_unique(array_map('intval', $value));
                 if (count($values)) {
                     $value = '(items:' . implode(' OR items:', $values)
@@ -301,7 +303,7 @@ class SolrQuerier extends AbstractQuerier
         return true;
     }
 
-    protected function mainQuery()
+    protected function mainQuery(): void
     {
         $q = $this->query->getQuery();
         $excludedFiles = $this->query->getExcludedFields();
@@ -329,7 +331,7 @@ class SolrQuerier extends AbstractQuerier
     /**
      * Only called from mainQuery(). $q is never empty.
      */
-    protected function mainQueryWithExcludedFields()
+    protected function mainQueryWithExcludedFields(): void
     {
         // Currently, the only way to exclude fields is to search in all other
         // fields.
@@ -348,7 +350,7 @@ class SolrQuerier extends AbstractQuerier
         $this->solrQuery->setQuery(implode(' ', $qq));
     }
 
-    protected function addFilterQueries()
+    protected function addFilterQueries(): void
     {
         $filters = $this->query->getFilterQueries();
         if (!$filters) {
@@ -490,7 +492,7 @@ class SolrQuerier extends AbstractQuerier
     protected function usedSolrFields()
     {
         $api = $this->getServiceLocator()->get('Omeka\ApiManager');
-        /** @var \Solr\Api\Representation\SolrMappingRepresentation[] $mappings */
+        /* @var \Solr\Api\Representation\SolrMappingRepresentation[] $mappings */
         return $api->search('solr_mappings', [
             'solr_node_id' => $this->solrNode->id(),
         ], ['returnScalar' => 'fieldName'])->getContent();

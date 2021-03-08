@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016-2017
@@ -98,7 +98,7 @@ class SolrIndexer extends AbstractIndexer
         return isset($valueExtractor);
     }
 
-    public function clearIndex(Query $query = null)
+    public function clearIndex(Query $query = null): void
     {
         if ($query) {
             /** @var \SolrDisMaxQuery|\SolrQuery|null $solrQuery */
@@ -119,7 +119,7 @@ class SolrIndexer extends AbstractIndexer
         $solrClient->commit();
     }
 
-    public function indexResource(Resource $resource)
+    public function indexResource(Resource $resource): void
     {
         if (empty($this->api)) {
             $this->init();
@@ -128,7 +128,7 @@ class SolrIndexer extends AbstractIndexer
         $this->commit();
     }
 
-    public function indexResources(array $resources)
+    public function indexResources(array $resources): void
     {
         if (empty($resources)) {
             return;
@@ -142,7 +142,7 @@ class SolrIndexer extends AbstractIndexer
         $this->commit();
     }
 
-    public function deleteResource($resourceName, $resourceId)
+    public function deleteResource($resourceName, $resourceId): void
     {
         $id = $this->getDocumentId($resourceName, $resourceId);
         $this->getClient()->deleteById($id);
@@ -154,7 +154,7 @@ class SolrIndexer extends AbstractIndexer
      *
      * @todo Create/use a full service manager factory.
      */
-    protected function init()
+    protected function init(): void
     {
         $services = $this->getServiceLocator();
         $this->api = $services->get('Omeka\ApiManager');
@@ -170,7 +170,7 @@ class SolrIndexer extends AbstractIndexer
         return sprintf('%s:%s', $resourceName, $resourceId);
     }
 
-    protected function addResource(Resource $resource)
+    protected function addResource(Resource $resource): void
     {
         $resourceName = $resource->getResourceName();
         $resourceId = $resource->getId();
@@ -308,7 +308,7 @@ class SolrIndexer extends AbstractIndexer
     /**
      * Commit the prepared documents.
      */
-    protected function commit()
+    protected function commit(): void
     {
         $this->getLogger()->info('Commit index in Solr.'); // @translate
         $this->getClient()->commit();

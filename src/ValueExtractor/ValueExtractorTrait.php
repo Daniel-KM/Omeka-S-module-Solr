@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /*
  * Copyright Daniel Berthereau, 2018
  * Copyright Paul Sarrassat, 2018
@@ -78,7 +78,7 @@ trait ValueExtractorTrait
 
         $extractedValues = [];
         /* @var ValueRepresentation[] $values */
-        $values = $representation->value($field, ['all' => true, 'default' => []]);
+        $values = $representation->value($field, ['all' => true]);
         foreach ($values as $value) {
             // Manage standard types and special types from modules RdfDatatype,
             // CustomVocab, ValueSuggest, etc.
@@ -107,7 +107,7 @@ trait ValueExtractorTrait
         array &$extractedValues,
         ValueRepresentation $value,
         $property
-    ) {
+    ): void {
         if (isset($property)) {
             $extractedValues = array_merge(
                 $extractedValues,

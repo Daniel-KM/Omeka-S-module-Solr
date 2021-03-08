@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Solr\Schema;
 
@@ -86,7 +86,7 @@ class Schema
     /**
      * @param array $schema
      */
-    public function setSchema($schema)
+    public function setSchema($schema): void
     {
         $this->schema = $schema;
     }

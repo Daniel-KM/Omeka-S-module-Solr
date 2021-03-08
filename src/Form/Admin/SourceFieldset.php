@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Solr\Form\Admin;
 
-use Laminas\Form\Fieldset;
 use Laminas\Form\Element;
+use Laminas\Form\Fieldset;
 use Laminas\InputFilter\InputFilterProviderInterface;
 
 class SourceFieldset extends Fieldset implements InputFilterProviderInterface
@@ -14,7 +14,7 @@ class SourceFieldset extends Fieldset implements InputFilterProviderInterface
         $this->init();
     }
 
-    public function init()
+    public function init(): void
     {
         $this->add([
             'name' => 'source',

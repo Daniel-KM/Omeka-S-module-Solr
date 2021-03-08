@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016
@@ -58,7 +58,7 @@ class SolrNode extends AbstractEntity
         return $this->id;
     }
 
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -68,7 +68,7 @@ class SolrNode extends AbstractEntity
         return $this->name;
     }
 
-    public function setSettings($settings)
+    public function setSettings($settings): void
     {
         $this->settings = $settings;
     }

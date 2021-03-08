@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -63,7 +63,7 @@ class SolrMappingAdapter extends AbstractEntityAdapter
 
     public function hydrate(Request $request, EntityInterface $entity,
         ErrorStore $errorStore
-    ) {
+    ): void {
         if ($this->shouldHydrate($request, 'o:resource_name')) {
             $entity->setResourceName($request->getValue('o:resource_name'));
         }
@@ -80,7 +80,7 @@ class SolrMappingAdapter extends AbstractEntityAdapter
         $this->hydrateSolrNode($request, $entity);
     }
 
-    public function buildQuery(QueryBuilder $qb, array $query)
+    public function buildQuery(QueryBuilder $qb, array $query): void
     {
         $isOldOmeka = \Omeka\Module::VERSION < 2;
         $alias = $isOldOmeka ? $this->getEntityClass() : 'omeka_root';
@@ -106,7 +106,7 @@ class SolrMappingAdapter extends AbstractEntityAdapter
         }
     }
 
-    protected function hydrateSolrNode(Request $request, EntityInterface $entity)
+    protected function hydrateSolrNode(Request $request, EntityInterface $entity): void
     {
         if ($this->shouldHydrate($request, 'o:solr_node')) {
             $data = $request->getContent();

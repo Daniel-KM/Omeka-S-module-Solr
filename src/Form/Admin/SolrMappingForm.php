@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -30,12 +30,12 @@
 
 namespace Solr\Form\Admin;
 
-use Omeka\Api\Manager as ApiManager;
-use Solr\ValueExtractor\Manager as ValueExtractorManager;
-use Solr\ValueFormatter\Manager as ValueFormatterManager;
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
 use Laminas\Form\Form;
+use Omeka\Api\Manager as ApiManager;
+use Solr\ValueExtractor\Manager as ValueExtractorManager;
+use Solr\ValueFormatter\Manager as ValueFormatterManager;
 
 class SolrMappingForm extends Form
 {
@@ -54,7 +54,7 @@ class SolrMappingForm extends Form
      */
     protected $apiManager;
 
-    public function init()
+    public function init(): void
     {
         $this->add([
             'name' => 'o:source',

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016-2017
@@ -30,10 +30,10 @@
 
 namespace Solr\ValueExtractor;
 
+use Laminas\Log\LoggerInterface;
 use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
-use Laminas\Log\LoggerInterface;
 
 class ItemValueExtractor implements ValueExtractorInterface
 {
@@ -57,7 +57,7 @@ class ItemValueExtractor implements ValueExtractorInterface
     /**
      * @param ApiManager $api
      */
-    public function setApiManager(ApiManager $api)
+    public function setApiManager(ApiManager $api): void
     {
         $this->api = $api;
     }
@@ -65,7 +65,7 @@ class ItemValueExtractor implements ValueExtractorInterface
     /**
      * @param ApiManager $api
      */
-    public function setBaseFilepath($baseFilepath)
+    public function setBaseFilepath($baseFilepath): void
     {
         $this->baseFilepath = $baseFilepath;
     }
@@ -73,7 +73,7 @@ class ItemValueExtractor implements ValueExtractorInterface
     /**
      * @param LoggerInterface $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
@@ -157,7 +157,7 @@ class ItemValueExtractor implements ValueExtractorInterface
                 || preg_match('~^item_set/(.*)|^item_set$~', $field, $matches)
             ) {
                 $fieldName = $matches[0];
-                $subFieldName = isset($matches[1]) ? $matches[1] : '';
+                $subFieldName = $matches[1] ?? '';
                 switch ($fieldName) {
                     case 'media':
                         return $this->extractMediaValue($item, $subFieldName);

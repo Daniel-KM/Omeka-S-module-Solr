@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -31,8 +31,8 @@
 namespace Solr\Service;
 
 use Interop\Container\ContainerInterface;
-use Solr\Schema\Schema;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Solr\Schema\Schema;
 
 class SchemaFactory implements FactoryInterface
 {
@@ -67,7 +67,7 @@ class SchemaFactory implements FactoryInterface
      * @param Schema $schema
      * @param string $schemaUrl
      */
-    protected function setSchemaConfig(Schema $schema, $schemaUrl)
+    protected function setSchemaConfig(Schema $schema, $schemaUrl): void
     {
         $arrContextOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $contents = @file_get_contents($schemaUrl, false, stream_context_create($arrContextOptions));

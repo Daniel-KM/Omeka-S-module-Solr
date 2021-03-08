@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016
@@ -30,14 +30,14 @@
 
 namespace Solr\Controller\Admin;
 
+use Laminas\Mvc\Controller\AbstractActionController;
+use Laminas\View\Model\ViewModel;
 use Omeka\Form\ConfirmForm;
 use Omeka\Stdlib\Message;
 use Search\Api\Representation\SearchIndexRepresentation;
 use Search\Api\Representation\SearchPageRepresentation;
-use Solr\Form\Admin\SolrNodeForm;
 use Solr\Api\Representation\SolrNodeRepresentation;
-use Laminas\Mvc\Controller\AbstractActionController;
-use Laminas\View\Model\ViewModel;
+use Solr\Form\Admin\SolrNodeForm;
 
 class NodeController extends AbstractActionController
 {

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -32,16 +32,16 @@
 namespace Solr\Controller\Admin;
 
 use Doctrine\DBAL\Connection;
+use Laminas\Mvc\Controller\AbstractActionController;
+use Laminas\View\Model\ViewModel;
 use Omeka\Form\ConfirmForm;
 use Omeka\Stdlib\Message;
 use Search\Api\Representation\SearchIndexRepresentation;
 use Search\Api\Representation\SearchPageRepresentation;
+use Solr\Api\Representation\SolrMappingRepresentation;
 use Solr\Api\Representation\SolrNodeRepresentation;
 use Solr\Form\Admin\SolrMappingForm;
 use Solr\ValueExtractor\Manager as ValueExtractorManager;
-use Laminas\Mvc\Controller\AbstractActionController;
-use Laminas\View\Model\ViewModel;
-use Solr\Api\Representation\SolrMappingRepresentation;
 
 class MappingController extends AbstractActionController
 {
@@ -55,12 +55,12 @@ class MappingController extends AbstractActionController
      */
     protected $connection;
 
-    public function setValueExtractorManager(ValueExtractorManager $valueExtractorManager)
+    public function setValueExtractorManager(ValueExtractorManager $valueExtractorManager): void
     {
         $this->valueExtractorManager = $valueExtractorManager;
     }
 
-    public function setConnection(Connection $connection)
+    public function setConnection(Connection $connection): void
     {
         $this->connection = $connection;
     }

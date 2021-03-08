@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016-2017
@@ -32,9 +32,9 @@ namespace Solr\Api\Representation;
 
 use Omeka\Api\Representation\AbstractEntityRepresentation;
 use Omeka\Stdlib\Message;
+use Solr\Schema;
 use SolrClient;
 use SolrException;
-use Solr\Schema;
 
 class SolrNodeRepresentation extends AbstractEntityRepresentation
 {
@@ -100,7 +100,7 @@ class SolrNodeRepresentation extends AbstractEntityRepresentation
     public function clientUrl()
     {
         $settings = $this->clientSettings();
-        $user = isset($settings['login']) ? $settings['login'] : '';
+        $user = $settings['login'] ?? '';
         $pass = isset($settings['password']) ? ':' . $settings['password'] : '';
         $pass = ($user || $pass) ? $pass . '@' : '';
         return (empty($settings['secure']) ? 'http://' : 'https://')

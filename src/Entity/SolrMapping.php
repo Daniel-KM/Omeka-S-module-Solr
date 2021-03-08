@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -79,7 +79,7 @@ class SolrMapping extends AbstractEntity
         return $this->id;
     }
 
-    public function setSolrNode(SolrNode $solrNode)
+    public function setSolrNode(SolrNode $solrNode): void
     {
         $this->solrNode = $solrNode;
     }
@@ -89,7 +89,7 @@ class SolrMapping extends AbstractEntity
         return $this->solrNode;
     }
 
-    public function setResourceName($resourceName)
+    public function setResourceName($resourceName): void
     {
         $this->resourceName = $resourceName;
     }
@@ -99,7 +99,7 @@ class SolrMapping extends AbstractEntity
         return $this->resourceName;
     }
 
-    public function setFieldName($fieldName)
+    public function setFieldName($fieldName): void
     {
         $this->fieldName = $fieldName;
     }
@@ -109,7 +109,7 @@ class SolrMapping extends AbstractEntity
         return $this->fieldName;
     }
 
-    public function setSource($source)
+    public function setSource($source): void
     {
         $this->source = $source;
     }
@@ -119,7 +119,7 @@ class SolrMapping extends AbstractEntity
         return $this->source;
     }
 
-    public function setSettings($settings)
+    public function setSettings($settings): void
     {
         $this->settings = $settings;
     }

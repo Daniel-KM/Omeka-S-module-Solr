@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016
@@ -30,11 +30,11 @@
 
 namespace Solr\Adapter;
 
+use Laminas\I18n\Translator\TranslatorInterface;
 use Omeka\Api\Manager as ApiManager;
 use Search\Adapter\AbstractAdapter;
 use Search\Api\Representation\SearchIndexRepresentation;
 use Solr\Form\ConfigFieldset;
-use Laminas\I18n\Translator\TranslatorInterface;
 
 class SolrAdapter extends AbstractAdapter
 {
@@ -121,7 +121,7 @@ class SolrAdapter extends AbstractAdapter
                 continue;
             }
             $mappingSettings = $mapping->settings();
-            $label = isset($mappingSettings['label']) ? $mappingSettings['label'] : '';
+            $label = $mappingSettings['label'] ?? '';
             foreach ($directionLabel as $direction => $labelDirection) {
                 $name = $fieldName . ' ' . $direction;
                 $sortFields[$name] = [
@@ -151,7 +151,7 @@ class SolrAdapter extends AbstractAdapter
         foreach ($mappings as $mapping) {
             $name = $mapping->fieldName();
             $mappingSettings = $mapping->settings();
-            $label = isset($mappingSettings['label']) ? $mappingSettings['label'] : '';
+            $label = $mappingSettings['label'] ?? '';
             $facetFields[$name] = [
                 'name' => $name,
                 'label' => $label,

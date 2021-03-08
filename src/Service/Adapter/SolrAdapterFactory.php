@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2017
@@ -31,8 +31,8 @@
 namespace Solr\Service\Adapter;
 
 use Interop\Container\ContainerInterface;
-use Solr\Adapter\SolrAdapter;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Solr\Adapter\SolrAdapter;
 
 class SolrAdapterFactory implements FactoryInterface
 {

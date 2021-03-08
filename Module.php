@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * Copyright BibLibre, 2016-2017
@@ -30,17 +30,17 @@
 
 namespace Solr;
 
+use Laminas\EventManager\Event;
+use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\ModuleManager\ModuleManager;
+use Laminas\Mvc\MvcEvent;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 use Omeka\Module\AbstractModule;
 use Omeka\Module\Exception\ModuleCannotInstallException;
 use Omeka\Mvc\Controller\Plugin\Messenger;
 use Omeka\Stdlib\Message;
 use Search\Api\Representation\SearchIndexRepresentation;
 use Search\Api\Representation\SearchPageRepresentation;
-use Laminas\EventManager\Event;
-use Laminas\EventManager\SharedEventManagerInterface;
-use Laminas\ModuleManager\ModuleManager;
-use Laminas\Mvc\MvcEvent;
-use Laminas\ServiceManager\ServiceLocatorInterface;
 
 class Module extends AbstractModule
 {
@@ -51,7 +51,7 @@ class Module extends AbstractModule
         return include __DIR__ . '/config/module.config.php';
     }
 
-    public function init(ModuleManager $moduleManager)
+    public function init(ModuleManager $moduleManager): void
     {
         // No need to check the dependency upon Search here.
         // Once disabled via onBootstrap(), thiis method is no more called.
@@ -74,7 +74,7 @@ class Module extends AbstractModule
         );
     }
 
-    public function onBootstrap(MvcEvent $event)
+    public function onBootstrap(MvcEvent $event): void
     {
         parent::onBootstrap($event);
 
@@ -88,7 +88,7 @@ class Module extends AbstractModule
         $this->addAclRules();
     }
 
-    public function install(ServiceLocatorInterface $serviceLocator)
+    public function install(ServiceLocatorInterface $serviceLocator): void
     {
         $this->setServiceLocator($serviceLocator);
         $connection = $serviceLocator->get('Omeka\Connection');
@@ -142,7 +142,7 @@ SQL;
         }
     }
 
-    public function uninstall(ServiceLocatorInterface $serviceLocator)
+    public function uninstall(ServiceLocatorInterface $serviceLocator): void
     {
         $this->setServiceLocator($serviceLocator);
         $moduleManager = $serviceLocator->get('Omeka\ModuleManager');
@@ -163,7 +163,7 @@ SQL;
     }
 
     public function upgrade($oldVersion, $newVersion,
-        ServiceLocatorInterface $serviceLocator)
+        ServiceLocatorInterface $serviceLocator): void
     {
         $this->setServiceLocator($serviceLocator);
         require_once 'data/scripts/upgrade.php';
@@ -172,7 +172,7 @@ SQL;
     /**
      * Add ACL rules for this module.
      */
-    protected function addAclRules()
+    protected function addAclRules(): void
     {
         $acl = $this->getServiceLocator()->get('Omeka\Acl');
         $acl->allow(null, [
@@ -182,7 +182,7 @@ SQL;
         $acl->allow(null, \Solr\Entity\SolrNode::class, 'read');
     }
 
-    public function attachListeners(SharedEventManagerInterface $sharedEventManager)
+    public function attachListeners(SharedEventManagerInterface $sharedEventManager): void
     {
         $sharedEventManager->attach(
             Api\Adapter\SolrNodeAdapter::class,
@@ -211,7 +211,7 @@ SQL;
         );
     }
 
-    public function deletePostSolrNode(Event $event)
+    public function deletePostSolrNode(Event $event): void
     {
         $api = $this->getServiceLocator()->get('Omeka\ApiManager');
         $request = $event->getParam('request');
@@ -223,7 +223,7 @@ SQL;
         $api->batchDelete('search_indexes', array_keys($searchIndexes), [], ['continueOnError' => true]);
     }
 
-    public function preSolrMapping(Event $event)
+    public function preSolrMapping(Event $event): void
     {
         $api = $this->getServiceLocator()->get('Omeka\ApiManager');
         $request = $event->getParam('request');
@@ -239,7 +239,7 @@ SQL;
         $request->setContent($data);
     }
 
-    public function updatePostSolrMapping(Event $event)
+    public function updatePostSolrMapping(Event $event): void
     {
         $api = $this->getServiceLocator()->get('Omeka\ApiManager');
         $request = $event->getParam('request');
@@ -287,7 +287,7 @@ SQL;
         }
     }
 
-    public function deletePostSolrMapping(Event $event)
+    public function deletePostSolrMapping(Event $event): void
     {
         $api = $this->getServiceLocator()->get('Omeka\ApiManager');
         $request = $event->getParam('request');
@@ -416,7 +416,7 @@ SQL;
      *
      * @param string $moduleClass
      */
-    protected function disableModule($moduleClass)
+    protected function disableModule($moduleClass): void
     {
         // Check if the module is enabled first to avoid an exception.
         if (!$this->isModuleActive($moduleClass)) {
