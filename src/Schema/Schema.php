@@ -73,7 +73,7 @@ class Schema
                         $url
                     );
                 }
-                throw new SolrServerException($message);
+                throw new SolrServerException((string) $message);
             }
 
             $response = json_decode($contents, true);
