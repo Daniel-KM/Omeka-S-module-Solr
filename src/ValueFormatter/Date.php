@@ -29,7 +29,7 @@
 
 namespace Solr\ValueFormatter;
 
-use \DateTime;
+use DateTime;
 
 class Date implements ValueFormatterInterface
 {

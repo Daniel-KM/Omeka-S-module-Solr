@@ -591,11 +591,11 @@ class SolrQuerier extends AbstractQuerier
                 ':' => '\:',
                 '-' => '\-',
                 '/' => '\/',
-            ] + array_map(function($v) {
+            ] + array_map(function ($v) {
                 return substr($v, 0, 1);
             }, $this->baseDiacritics);
         }
-        $regexVal = function($string) use ($prepend, $append, $basicDiacritics) {
+        $regexVal = function ($string) use ($prepend, $append, $basicDiacritics) {
             $latinized = str_replace(array_keys($basicDiacritics), array_values($basicDiacritics), mb_strtolower($string));
             return '/' . $prepend
                 . str_replace(array_keys($this->regexDiacritics), array_values($this->regexDiacritics), $latinized)

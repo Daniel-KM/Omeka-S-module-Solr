@@ -201,7 +201,7 @@ class MappingController extends AbstractActionController
             }
 
             // There may be multiple mappings with the same term.
-            $ids = array_keys(array_filter($mappings, function($v) use ($term) {
+            $ids = array_keys(array_filter($mappings, function ($v) use ($term) {
                 return $v === $term;
             }));
             $api->batchDelete('solr_mappings', $ids);

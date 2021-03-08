@@ -298,7 +298,7 @@ class SolrIndexer extends AbstractIndexer
      * Check if a value is not null neither an empty string.
      *
      * @param mixed $value
-     * @return boolean
+     * @return bool
      */
     protected function isNotNullAndNotEmptyString($value)
     {
