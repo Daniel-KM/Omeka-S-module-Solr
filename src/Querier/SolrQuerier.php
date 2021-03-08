@@ -221,7 +221,7 @@ class SolrQuerier extends AbstractQuerier
 
         $dateRangeFilters = $this->query->getDateRangeFilters();
         foreach ($dateRangeFilters as $name => $filterValues) {
-            // Normalize dates if needed.
+            // Normalize dates if needed (not _dr or _drs).
             $normalize = substr_compare($name, '_dt', -3) === 0
                 || substr_compare($name, '_dts', -4) === 0
                 || substr_compare($name, '_pdt', -4) === 0
