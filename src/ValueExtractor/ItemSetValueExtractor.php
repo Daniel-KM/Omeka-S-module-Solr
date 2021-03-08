@@ -33,7 +33,7 @@ namespace Solr\ValueExtractor;
 use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
-use Zend\Log\LoggerInterface;
+use Laminas\Log\LoggerInterface;
 
 class ItemSetValueExtractor implements ValueExtractorInterface
 {

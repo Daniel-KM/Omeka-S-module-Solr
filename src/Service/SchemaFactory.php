@@ -32,7 +32,7 @@ namespace Solr\Service;
 
 use Interop\Container\ContainerInterface;
 use Solr\Schema\Schema;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class SchemaFactory implements FactoryInterface
 {

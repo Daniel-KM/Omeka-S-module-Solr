@@ -91,7 +91,7 @@ return [
             'admin' => [
                 'child_routes' => [
                     'solr' => [
-                        'type' => \Zend\Router\Http\Segment::class,
+                        'type' => \Laminas\Router\Http\Segment::class,
                         'options' => [
                             'route' => '/solr',
                             'defaults' => [
@@ -103,7 +103,7 @@ return [
                         'may_terminate' => true,
                         'child_routes' => [
                             'node' => [
-                                'type' => \Zend\Router\Http\Segment::class,
+                                'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/node[/:action]',
                                     'defaults' => [
@@ -112,7 +112,7 @@ return [
                                 ],
                             ],
                             'node-id' => [
-                                'type' => \Zend\Router\Http\Segment::class,
+                                'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/node/:id[/:action]',
                                     'constraints' => [
@@ -124,7 +124,7 @@ return [
                                 ],
                             ],
                             'node-id-mapping' => [
-                                'type' => \Zend\Router\Http\Segment::class,
+                                'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/node/:nodeId/mapping',
                                     'defaults' => [
@@ -134,7 +134,7 @@ return [
                                 ],
                             ],
                             'node-id-mapping-resource' => [
-                                'type' => \Zend\Router\Http\Segment::class,
+                                'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/node/:nodeId/mapping/:resourceName[/:action]',
                                     'defaults' => [
@@ -144,7 +144,7 @@ return [
                                 ],
                             ],
                             'node-id-mapping-resource-id' => [
-                                'type' => \Zend\Router\Http\Segment::class,
+                                'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/node/:nodeId/mapping/:resourceName/:id[/:action]',
                                     'constraints' => [

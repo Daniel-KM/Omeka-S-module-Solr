@@ -32,7 +32,7 @@ namespace Solr\Service\Adapter;
 
 use Interop\Container\ContainerInterface;
 use Solr\Adapter\SolrAdapter;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class SolrAdapterFactory implements FactoryInterface
 {

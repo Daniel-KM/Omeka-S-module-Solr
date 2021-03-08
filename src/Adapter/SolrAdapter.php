@@ -34,7 +34,7 @@ use Omeka\Api\Manager as ApiManager;
 use Search\Adapter\AbstractAdapter;
 use Search\Api\Representation\SearchIndexRepresentation;
 use Solr\Form\ConfigFieldset;
-use Zend\I18n\Translator\TranslatorInterface;
+use Laminas\I18n\Translator\TranslatorInterface;
 
 class SolrAdapter extends AbstractAdapter
 {

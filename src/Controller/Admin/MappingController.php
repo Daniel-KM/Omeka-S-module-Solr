@@ -39,8 +39,8 @@ use Search\Api\Representation\SearchPageRepresentation;
 use Solr\Api\Representation\SolrNodeRepresentation;
 use Solr\Form\Admin\SolrMappingForm;
 use Solr\ValueExtractor\Manager as ValueExtractorManager;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
+use Laminas\Mvc\Controller\AbstractActionController;
+use Laminas\View\Model\ViewModel;
 use Solr\Api\Representation\SolrMappingRepresentation;
 
 class MappingController extends AbstractActionController

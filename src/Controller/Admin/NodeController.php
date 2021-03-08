@@ -36,8 +36,8 @@ use Search\Api\Representation\SearchIndexRepresentation;
 use Search\Api\Representation\SearchPageRepresentation;
 use Solr\Form\Admin\SolrNodeForm;
 use Solr\Api\Representation\SolrNodeRepresentation;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
+use Laminas\Mvc\Controller\AbstractActionController;
+use Laminas\View\Model\ViewModel;
 
 class NodeController extends AbstractActionController
 {
