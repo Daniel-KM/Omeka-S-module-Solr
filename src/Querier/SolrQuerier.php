@@ -183,6 +183,18 @@ class SolrQuerier extends AbstractQuerier
 
         $filters = $this->query->getFilters();
         foreach ($filters as $name => $values) {
+            if ($name === 'id') {
+                $value = [];
+                array_walk_recursive($values, function($v) use (&$value) { $value[] = $v; });
+                $values = array_unique(array_map('intval', $value));
+                if (count($values)) {
+                    $value = '(items:' . implode(' OR items:', $values)
+                        . ' OR item_sets:' . implode('OR item_sets:', $values) . ')';
+                    $this->solrQuery
+                        ->addFilterQuery("$name:$value");
+                }
+                continue;
+            }
             foreach ($values as $value) {
                 $value = $this->encloseValue($value);
                 if (!strlen($value)) {
@@ -517,12 +529,11 @@ class SolrQuerier extends AbstractQuerier
             if (empty($value)) {
                 $value = '';
             } else {
-                $value = '(' . implode(' OR ', array_map([$this, 'enclose'], $value)) . ')';
+                $value = '(' . implode(' OR ', array_unique(array_map([$this, 'enclose'], $value))) . ')';
             }
         } else {
             $value = $this->enclose($value);
         }
-
         return $value;
     }
 
@@ -543,7 +554,6 @@ class SolrQuerier extends AbstractQuerier
         } else {
             $value = $this->enclose($value);
         }
-
         return $value;
     }
 
