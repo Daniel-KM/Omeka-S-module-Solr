@@ -97,7 +97,7 @@ class Module extends AbstractModule
 
         $message = new Message(sprintf(
             $translator->translate('This module is deprecated and will not receive new improvements any more. The module %1$sSearchSolr%2$s replaces it.'), // @translate
-            '<a href="https://github.com/Daniel-KM/Omeka-S-module-SearchSolr" target="_blank">', '</a>'
+            '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-SearchSolr" target="_blank">', '</a>'
         ));
         $message->setEscapeHtml(false);
         $messenger->addWarning($message);

@@ -326,7 +326,7 @@ Note: the config of SolR is saved in `/var/solr/data` by default.
 Troubleshooting
 ---------------
 
-See online issues on the [module issues] page on GitHub.
+See online issues on the [module issues] page on GitLab.
 
 
 License
@@ -370,9 +370,9 @@ See commits for full list of contributors.
 
 
 [Solr]: https://github.com/BibLibre/Omeka-S-module-Solr
-[Search adapter for Solr]: https://github.com/Daniel-KM/Omeka-S-module-SearchSolr
+[Search adapter for Solr]: https://gitlab.com/Daniel-KM/Omeka-S-module-SearchSolr
 [Omeka S]: https://omeka.org/s
-[Search]: https://github.com/Daniel-KM/omeka-s-module-Search
+[Search]: https://gitlab.com/Daniel-KM/omeka-s-module-Search
 [Apache Solr]: https://lucene.apache.org/solr/
 [Solr of BibLibre]: https://github.com/biblibre/omeka-s-module-Solr
 [Solr module]: https://github.com/biblibre/omeka-s-module-Solr
@@ -386,7 +386,7 @@ See commits for full list of contributors.
 [1.7 u55]: https://lucene.apache.org/solr/5_5_5/SYSTEM_REQUIREMENTS.html
 [http://localhost:8983]: http://localhost:8983
 [http://localhost:8983/solr/#/omeka]: http://localhost:8983/solr/#/omeka
-[solr service gist]: https://gist.github.com/Daniel-KM/1fb475a47340d7945fa6c47c945707d0
+[solr service gist]: https://gist.gitlab.com/Daniel-KM/1fb475a47340d7945fa6c47c945707d0
 [Solr documentation]: https://lucene.apache.org/solr/resources.html
 [module issues]: https://github.com/BibLibre/Omeka-S-module-Solr/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
@@ -395,4 +395,4 @@ See commits for full list of contributors.
 [OSI]: http://opensource.org
 [BibLibre]: https://github.com/biblibre
 [GitLab]: https://gitlab.com/Daniel-KM
-[Daniel-KM]: https://github.com/Daniel-KM "Daniel Berthereau"
+[Daniel-KM]: https://gitlab.com/Daniel-KM "Daniel Berthereau"
