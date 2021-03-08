@@ -1,6 +1,10 @@
 Solr (module for Omeka S) [archived]
 =========================
 
+> __New versions of this module and support for Omeka S version 3.0 and above
+> are available on [GitLab], which seems to respect users and privacy better
+> than the previous repository.__
+
 [![Build Status](https://travis-ci.org/biblibre/omeka-s-module-Solr.svg?branch=master)](https://travis-ci.org/biblibre/omeka-s-module-Solr)
 
 [Solr] is a module for [Omeka S] that provides a [Search] adapter for [Apache Solr].
@@ -390,4 +394,5 @@ See commits for full list of contributors.
 [FSF]: https://www.fsf.org
 [OSI]: http://opensource.org
 [BibLibre]: https://github.com/biblibre
+[GitLab]: https://gitlab.com/Daniel-KM
 [Daniel-KM]: https://github.com/Daniel-KM "Daniel Berthereau"
